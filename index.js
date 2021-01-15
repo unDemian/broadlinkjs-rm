@@ -7,7 +7,7 @@ const assert = require('assert');
 // RM Devices (without RF support)
 const rmDeviceTypes = {};
 rmDeviceTypes[parseInt(0x2737, 16)] = "Broadlink RM Mini";
-rmDeviceTypes[parseInt(0x27c7, 16)] = 'Broadlink RM Mini 3 A'; 
+rmDeviceTypes[parseInt(0x27c7, 16)] = 'Broadlink RM Mini 3 A';
 rmDeviceTypes[parseInt(0x27c2, 16)] = "Broadlink RM Mini 3 B";
 rmDeviceTypes[parseInt(0x27de, 16)] = "Broadlink RM Mini 3 C";
 rmDeviceTypes[parseInt(0x5f36, 16)] = "Broadlink RM Mini 3 D";
@@ -31,6 +31,7 @@ rmPlusDeviceTypes[parseInt(0x27c3, 16)] = 'Broadlink RM3 Pro';
 
 // RM4 Devices (without RF support)
 const rm4DeviceTypes = {};
+rm4DeviceTypes[parseInt(0x653A, 16)] = "Broadlink RM Mini 4";
 rm4DeviceTypes[parseInt(0x51da, 16)] = "Broadlink RM Mini 4";
 rm4DeviceTypes[parseInt(0x5f36, 16)] = "Broadlink RM Mini 3";
 rm4DeviceTypes[parseInt(0x610e, 16)] = "Broadlink RM Mini 4";
@@ -84,7 +85,7 @@ class Broadlink extends EventEmitter {
     ipAddresses.forEach((ipAddress) => {
       const socket = dgram.createSocket({ type:'udp4', reuseAddr:true });
       this.sockets.push(socket)
-      
+
       socket.on('listening', this.onListening.bind(this, socket, ipAddress));
       socket.on('message', this.onMessage.bind(this));
 
@@ -143,7 +144,7 @@ class Broadlink extends EventEmitter {
     packet[0x0d] = year >> 8;
     packet[0x0e] = now.getMinutes();
     packet[0x0f] = now.getHours();
-    
+
     const subyear = year % 100;
     packet[0x10] = subyear;
     packet[0x11] = now.getDay();
@@ -195,7 +196,7 @@ class Broadlink extends EventEmitter {
     const { log, debug } = this;
 
     if (this.devices[macAddress]) return;
-  
+
     const isHostObjectValid = (
       typeof host === 'object' &&
       (host.port || host.port === 0) &&
@@ -220,7 +221,7 @@ class Broadlink extends EventEmitter {
 
     if (!isKnownDevice) {
       log(`\n\x1b[35m[Info]\x1b[0m We've discovered an unknown Broadlink device. This likely won't cause any issues.\n\nPlease raise an issue in the GitHub repository (https://github.com/lprhodes/homebridge-broadlink-rm/issues) with details of the type of device and its device type code: "${deviceType.toString(16)}". The device is connected to your network with the IP address "${host.address}".\n`);
-      
+
       return null;
     }
 
@@ -282,7 +283,7 @@ class Device {
     socket.on('message', (response) => {
       const encryptedPayload = Buffer.alloc(response.length - 0x38, 0);
       response.copy(encryptedPayload, 0, 0x38);
-      
+
       const err = response[0x22] | (response[0x23] << 8);
       if (err != 0) return;
 
